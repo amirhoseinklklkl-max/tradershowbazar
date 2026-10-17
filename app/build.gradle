@@ -95,7 +95,7 @@ dependencies {
     // Cafe Bazaar in-app billing (Poolakey) -- consumable wallet top-up packages.
     // Official Cafe Bazaar library; upstream hardcodes Bazaar's package/service/
     // signing-cert identity internally, so no manifestPlaceholders are needed here.
-    implementation 'ir.cafebazaar:poolakey:2.2.0'
+    implementation 'com.github.cafebazaar.Poolakey:poolakey:2.2.0'
 
     // Adivery ads SDK (rewarded video)
     implementation 'com.adivery:sdk:4.9.0'
