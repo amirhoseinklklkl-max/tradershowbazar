@@ -120,20 +120,6 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
     var newAchievementEvent by mutableStateOf<Achievement?>(null)
         private set
 
-    // --- One-time "rate us 5 stars on Bazaar" challenge ---
-    var reviewChallengeClaimed by mutableStateOf(false)
-        private set
-    var reviewChallengeReadyToClaim by mutableStateOf(false)
-        private set
-    private var reviewLinkOpenedAt = 0L
-    private var reviewChallengeClaimedDay = ""
-
-    /** The card should keep showing (even once claimed, as "دریافت شد ✓")
-     * only for the rest of the day it was claimed on -- after that it's
-     * cleared from the list entirely, matching how daily challenges reset. */
-    val showReviewChallengeCard: Boolean
-        get() = !reviewChallengeClaimed || reviewChallengeClaimedDay == todayKey()
-
     // --- One-time "join the Rubika channel" challenge (same gated pattern) ---
     var rubikaChallengeClaimed by mutableStateOf(false)
         private set
@@ -167,10 +153,6 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         private const val STARVING_HEALTH_DRAIN_MS = 60L * 60 * 1000    // extra loss while hunger is at 0
         private const val NET_WORTH_SAMPLE_EVERY_TICKS = 12              // sample every ~12s (ticks are now 1s apart)
         private const val LOW_STAT_TRADE_BLOCK_THRESHOLD = 20           // below this, trading is blocked
-        private const val REVIEW_CHALLENGE_REWARD_TOMAN = 60_000.0
-        private const val MIN_REVIEW_WAIT_MS = 15_000L                  // heuristic: must be away at least this long
-        const val BAZAAR_REVIEW_URL = "http://cafebazaar.ir/app/?id=ir.amir.triedgame&ref=share"
-
         private const val MIN_RUBIKA_WAIT_MS = 7_000L
         const val RUBIKA_JOIN_URL = "https://rubika.ir/Amirhosin_studio"
         private const val RUBIKA_CHALLENGE_REWARD_TOMAN = 60_000.0
@@ -205,9 +187,6 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
             rubikaChallengeClaimed = repository.loadRubikaChallengeClaimed()
             rubikaLinkOpenedAt = repository.loadRubikaLinkOpenedAt()
             rubikaChallengeClaimedDay = repository.loadRubikaChallengeClaimedDay()
-            reviewChallengeClaimed = repository.loadReviewChallengeClaimed()
-            reviewLinkOpenedAt = repository.loadReviewLinkOpenedAt()
-            reviewChallengeClaimedDay = repository.loadReviewChallengeClaimedDay()
             resolveOfflineGapAndStartTicking()
         }
     }
@@ -678,47 +657,22 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         repository.saveWallet(wallet)
     }
 
-    // --- One-time "rate us 5 stars on Bazaar" challenge ---
-    // NOTE: there is no way to verify from inside the app that a review was
-    // actually submitted -- Bazaar exposes no such API to third-party apps.
-    // This is a best-effort heuristic: the reward only becomes claimable
-    // after the user has left the app (presumably to the Bazaar page) and
-    // came back at least MIN_REVIEW_WAIT_MS later, which a simple "tap and
-    // immediately return" can't satisfy. It discourages casual abuse without
-    // claiming to be foolproof.
-
-    /** Call when the "انجام دادن" button is tapped, right before opening the Bazaar link. */
-    fun markReviewLinkOpened() {
-        if (reviewChallengeClaimed) return
-        reviewLinkOpenedAt = System.currentTimeMillis()
-        repository.saveReviewLinkOpenedAt(reviewLinkOpenedAt)
-    }
+    // --- One-time "join the Rubika channel" challenge ---
+    // NOTE: there is no way to verify from inside the app that the user
+    // actually joined -- this is a best-effort heuristic: the reward only
+    // becomes claimable after the user has left the app (presumably to the
+    // Rubika channel) and came back at least MIN_RUBIKA_WAIT_MS later, which
+    // a simple "tap and immediately return" can't satisfy. It discourages
+    // casual abuse without claiming to be foolproof.
 
     /** Call from the Activity's onResume. */
     fun onAppResumed() {
-        if (!reviewChallengeClaimed && reviewLinkOpenedAt > 0L) {
-            if (System.currentTimeMillis() - reviewLinkOpenedAt >= MIN_REVIEW_WAIT_MS) {
-                reviewChallengeReadyToClaim = true
-            }
-        }
         if (!rubikaChallengeClaimed && rubikaLinkOpenedAt > 0L) {
             if (System.currentTimeMillis() - rubikaLinkOpenedAt >= MIN_RUBIKA_WAIT_MS) {
                 rubikaChallengeReadyToClaim = true
             }
         }
     }
-
-    fun claimReviewChallenge() {
-        if (reviewChallengeClaimed || !reviewChallengeReadyToClaim) return
-        wallet = wallet.addToman(REVIEW_CHALLENGE_REWARD_TOMAN)
-        repository.saveWallet(wallet)
-        reviewChallengeClaimed = true
-        reviewChallengeClaimedDay = todayKey()
-        repository.saveReviewChallengeClaimed(true, reviewChallengeClaimedDay)
-        gainXp(50)
-    }
-
-    // --- One-time "join the Rubika channel" challenge (same gated pattern) ---
 
     /** Call when the "انجام دادن" button is tapped, right before opening the Rubika link. */
     fun markRubikaLinkOpened() {

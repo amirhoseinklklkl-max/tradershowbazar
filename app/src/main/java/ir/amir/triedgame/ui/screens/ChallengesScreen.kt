@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,9 +51,6 @@ fun ChallengesScreen(viewModel: GameViewModel) {
 
         when (tab) {
             ChallengesTab.DAILY -> LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (viewModel.showReviewChallengeCard) {
-                    item { ReviewChallengeCard(viewModel) }
-                }
                 if (viewModel.showRubikaChallengeCard) {
                     item { RubikaChallengeCard(viewModel) }
                 }
@@ -64,37 +60,6 @@ fun ChallengesScreen(viewModel: GameViewModel) {
             }
             ChallengesTab.ACHIEVEMENTS -> LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(viewModel.achievements) { state -> AchievementCard(state) }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ReviewChallengeCard(viewModel: GameViewModel) {
-    val uriHandler = LocalUriHandler.current
-    Surface(
-        color = if (viewModel.reviewChallengeClaimed) TsSurfaceElevated else Color(0xFF4A3B12),
-        shape = RoundedCornerShape(14.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.Star, contentDescription = null, tint = TsGold)
-            Spacer(Modifier.width(10.dp))
-            Column(Modifier.weight(1f)) {
-                Text("به بازی توی بازار ۵ ستاره بده", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                Text("یک‌بار، ۶۰,۰۰۰ تومان پاداش", style = MaterialTheme.typography.bodySmall)
-            }
-            when {
-                viewModel.reviewChallengeClaimed -> Text("دریافت شد ✓", color = TsGreen, style = MaterialTheme.typography.labelSmall)
-                viewModel.reviewChallengeReadyToClaim -> Button(onClick = { viewModel.claimReviewChallenge() }) {
-                    Text("دریافت جایزه", style = MaterialTheme.typography.labelSmall)
-                }
-                else -> Button(onClick = {
-                    viewModel.markReviewLinkOpened()
-                    uriHandler.openUri(GameViewModel.BAZAAR_REVIEW_URL)
-                }) {
-                    Text("انجام دادن", style = MaterialTheme.typography.labelSmall)
-                }
             }
         }
     }

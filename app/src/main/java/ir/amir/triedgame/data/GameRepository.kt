@@ -351,22 +351,6 @@ class GameRepository(context: Context) {
         prefs.edit().putBoolean(KEY_LIFE_EVENT_ELIGIBLE, eligible).apply()
     }
 
-    // --- One-time "rate us on Bazaar" challenge ---
-
-    fun loadReviewChallengeClaimed(): Boolean = prefs.getBoolean(KEY_REVIEW_CLAIMED, false)
-    fun saveReviewChallengeClaimed(claimed: Boolean, dayKey: String) {
-        prefs.edit()
-            .putBoolean(KEY_REVIEW_CLAIMED, claimed)
-            .putString(KEY_REVIEW_CLAIMED_DAY, dayKey)
-            .apply()
-    }
-    fun loadReviewChallengeClaimedDay(): String = prefs.getString(KEY_REVIEW_CLAIMED_DAY, "") ?: ""
-
-    fun loadReviewLinkOpenedAt(): Long = prefs.getLong(KEY_REVIEW_OPENED_AT, 0L)
-    fun saveReviewLinkOpenedAt(timestampMillis: Long) {
-        prefs.edit().putLong(KEY_REVIEW_OPENED_AT, timestampMillis).apply()
-    }
-
     // --- One-time "join Rubika channel" challenge ---
 
     fun loadRubikaChallengeClaimed(): Boolean = prefs.getBoolean(KEY_RUBIKA_CLAIMED, false)
@@ -424,9 +408,6 @@ class GameRepository(context: Context) {
         private const val KEY_LIFE_EVENT_DAY = "life_event_day"
         private const val KEY_OWNED_ASSETS = "owned_life_assets"
         private const val KEY_LIFE_EVENT_ELIGIBLE = "life_event_eligible"
-        private const val KEY_REVIEW_CLAIMED = "review_challenge_claimed"
-        private const val KEY_REVIEW_CLAIMED_DAY = "review_challenge_claimed_day"
-        private const val KEY_REVIEW_OPENED_AT = "review_link_opened_at"
         private const val KEY_RUBIKA_CLAIMED = "rubika_challenge_claimed"
         private const val KEY_RUBIKA_CLAIMED_DAY = "rubika_challenge_claimed_day"
         private const val KEY_RUBIKA_OPENED_AT = "rubika_link_opened_at"
